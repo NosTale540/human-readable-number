@@ -1,5 +1,4 @@
-module.exports = function toReadable (number) {
-    
+function getUnit (unit) {
     const units = new Map ( [
         [1, 'one'],
         [2, 'two'],
@@ -12,15 +11,10 @@ module.exports = function toReadable (number) {
         [9, 'nine']
     ]);
 
-    const twoDigitNumbers = new Map ( [
-        [10, 'ten'],
-        [11, 'eleven'],
-        [12, 'twelve'],
-        [13, 'thirteen'],
-        [15, 'fifteen'],
-        [18, 'eighteen']
-    ]);
+    return units.get(unit);
+}
 
+function getTens (ten) {
     const tens = new Map ([
         [2, 'twenty'],
         [3, 'thirty'],
@@ -32,37 +26,60 @@ module.exports = function toReadable (number) {
         [9, 'ninety']
     ]);
 
+    const twoDigitNumbers = new Map ( [
+        [10, 'ten'],
+        [11, 'eleven'],
+        [12, 'twelve'],
+        [13, 'thirteen'],
+        [15, 'fifteen'],
+        [18, 'eighteen']
+    ]);
+    
+    if (ten < 10) {
+        return getUnit(ten);
+    }
 
+    if (ten < 20) {
+        if (twoDigitNumbers.get(ten) != undefined) {
+            return twoDigitNumbers.get(ten)
+        } else {
+            return getUnit(ten - Math.floor(ten / 10) * 10) + 'teen';
+        }
+    }
+
+    let numberUnit = ten - Math.floor(ten / 10) * 10;
+    let numberTens = Math.floor(ten / 10);
+    let result = tens.get(numberTens);
+    if (numberUnit != 0) {
+        result += ' ' + getUnit(numberUnit);
+    }
+    return result;
+}
+
+function getHundred (hundred) {
+    let numberTens = hundred - Math.floor(hundred / 100) * 100
+    let numberHundred = Math.floor(hundred / 100);
+    let result = getUnit(numberHundred) + ' hundred';
+    if (numberTens != 0) {
+        result += ' ' + getTens(numberTens);
+    }
+    return result;
+}
+
+module.exports = function toReadable (number) {
     if (number === 0) {
         return('zero')
     }
 
     if (number < 10) {
-        return units.get(number);
+        return getUnit(number);
     }
 
-    if (number > 9 & number < 20) {
-        if (twoDigitNumbers.get(number) != undefined) {
-            return twoDigitNumbers.get(number)
-
-        } else {
-            return units.get(number - (Math.floor(number / 10)) * 10) + 'teen';
-        }
-    }
-    if (number < 100 & number > 19) {
-        // return tens.get(Math.floor(number / 10)) + ' ' + units.get(number - (Math.floor(number / 10)) * 10);
-        let result = tens.get(Math.floor(number / 10));
-        if ((units.get(number - (Math.floor(number / 10)) * 10)) != undefined) {
-            result += ' ' + units.get(number - (Math.floor(number / 10)) * 10);
-        }
-        return result;
+    if (number < 100) {
+        return getTens(number);
     }
 
-    if (number < 1000 & number > 99) {
-        let resultHundred = units.get(Math.floor(number / 100)) + ' hundred';
-        if ((number - Math.floor(number / 100) * 100) != 0) {
-            resultHundred += ' ' + toReadable(number - Math.floor(number / 100) * 100);
-        }
-        return resultHundred;
+    if (number < 1000) {
+        return getHundred(number);
     }
 }
